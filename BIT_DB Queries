@@ -1,0 +1,97 @@
+--Question 1 How many orders were placed in January? Answer: 21759
+
+SELECT
+COUNT (order_id)
+FROM BIT_DB.customers as cust;
+JOIN JanSales as jan
+ON cust.order_id=jan.order_id
+
+WHERE length(order_id)=6
+AND order_id<> 'Order ID'
+WHERE order_id IS NOT NULL
+AND order_id<>'';
+
+
+--Question 2 How many orders were for iPhones? Answer: 379
+SELECT
+COUNT (orderid)
+FROM BIT_DB.JanSales
+WHERE product='iPhone'
+AND length(orderid)=6
+AND orderid<> 'Order ID';
+
+--Question 3 Select all the customer account numbers for all the orders that were placed in February (n=1000 lines)
+SELECT Distinct 
+cust.acctnum
+FROM customers as cust
+JOIN FebSales as feb
+ON cust.order_id=feb.orderid
+WHERE length(orderid)=6
+AND orderid<> 'Order ID';
+
+--Question 4 Which product was teh cheapest one sold in January, and what was the price? Answer: AAA Batteries (4-pack) $2.99
+SELECT distinct
+Product
+, price
+FROM BIT_DB.JanSales
+WHERE length(orderid)=6
+AND orderid<> 'Order ID'
+ORDER BY price ASC LIMIT 1;
+
+--Practicing another way to write it...
+SELECT distinct 
+Product
+,MIN(price)
+FROM JanSales
+WHERE length(orderid)=6
+AND orderid<> 'Order ID'
+GROUP BY product
+ORDER BY price ASC LIMIT 1; 
+
+--Question 5 What is the total revenue for each product sold in January.  (numbers of products sold times price of the product) 
+--Quantity, price
+SELECT
+Product, 
+SUM (Quantity)*price as Revenue
+FROM JanSales
+WHERE length(orderid)=6
+AND orderid<> 'Order ID'
+GROUP BY Product;
+
+--Question, I don't know how to round the revenue to 2 decimals
+
+--Question 6 Which products were sold in February at Seattle address, how many of each were sold and what was the total revenue? 
+--location 548 Lincoln St, Seattle, WA 98101
+
+SELECT Distinct
+Product
+,SUM(Quantity)
+,SUM(Quantity)*price AS Revenue
+FROM FebSales
+WHERE location='548 Lincoln St, Seattle, WA 98101'
+AND length(orderid)=6
+AND orderid<> 'Order ID'
+GROUP BY Product;
+
+--My query isn't giving me all of the products. I don't know how to get them! 
+SELECT Distinct Product FROM FebSales; 
+
+
+--Question 7 How many customers ordered more than 2 products at a time in February, and what was the average amount spent for those customers? 
+--customers table order_id and acctnum
+--Count of Customers. 
+
+SELECT
+COUNT(distinct cust.acctnum)
+,AVG(feb.Quantity*feb.price) AS Average_Spent
+FROM BIT_DB.FebSales as feb
+LEFT JOIN customer as cust
+ON feb.orderid=cust.order_id
+WHERE feb.Quantity>2 
+AND length(orderid)=6
+AND orderid<> 'Order ID';
+
+--I got better results when I did my own, not used the hints and answers! Come back to this one. 
+
+
+SELECT * FROM FebSales LIMIT 5;
