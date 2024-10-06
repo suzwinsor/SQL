@@ -95,3 +95,27 @@ AND orderid<> 'Order ID';
 
 
 SELECT * FROM FebSales LIMIT 5;
+
+SELECT orderdate
+FROM BIT_DB.FebSales
+WHERE orderdate='02/18/19 01:35';
+
+SELECT sum(quantity)
+FROM BIT_DB.FebSales
+WHERE orderdate like '02/18/19%';
+
+SELECT distinct Product
+FROM BIT_DB.FebSales
+WHERE Product like '%Batteries%';
+
+SELECT distinct Product, Price
+FROM BIT_DB.FebSales
+WHERE Price like '%.99';
+
+SELECT * FROM BIT_DB.FebSales LIMIT 2;
+
+SELECT distinct Product
+,SUM(Quantity)
+FROM BIT_DB.FebSales
+WHERE location like '%Los Angeles%'
+GROUP BY Product;   
