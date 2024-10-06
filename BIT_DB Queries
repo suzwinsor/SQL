@@ -81,17 +81,14 @@ SELECT Distinct Product FROM FebSales;
 --customers table order_id and acctnum
 --Count of Customers. 
 
-SELECT
-COUNT(distinct cust.acctnum)
-,AVG(feb.Quantity*feb.price) AS Average_Spent
-FROM BIT_DB.FebSales as feb
-LEFT JOIN customer as cust
-ON feb.orderid=cust.order_id
-WHERE feb.Quantity>2 
+SELECT COUNT (distinct cust.acctnum)
+,AVG(feb.price*feb.Quantity) AS Avg_Spent
+FROM BIT_DB.customers AS cust
+JOIN BIT_DB.FebSales AS feb
+ON cust.order_id=feb.orderID
+WHERE feb.Quantity>2
 AND length(orderid)=6
-AND orderid<> 'Order ID';
-
---I got better results when I did my own, not used the hints and answers! Come back to this one. 
+AND orderid<>'Order ID';
 
 
 SELECT * FROM FebSales LIMIT 5;
