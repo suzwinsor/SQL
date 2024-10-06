@@ -63,18 +63,16 @@ GROUP BY Product;
 --Question 6 Which products were sold in February at Seattle address, how many of each were sold and what was the total revenue? 
 --location 548 Lincoln St, Seattle, WA 98101
 
-SELECT Distinct
-Product
-,SUM(Quantity)
-,SUM(Quantity)*price AS Revenue
-FROM FebSales
-WHERE location='548 Lincoln St, Seattle, WA 98101'
+SELECT
+SUM(Quantity) AS Quantity
+,Product
+,SUM(Quantity)*price AS Total_Revenue
+FROM BIT_DB.FebSales
+WHERE location like '%Seattle, WA%'
 AND length(orderid)=6
-AND orderid<> 'Order ID'
-GROUP BY Product;
-
---My query isn't giving me all of the products. I don't know how to get them! 
-SELECT Distinct Product FROM FebSales; 
+AND orderid<>'Order ID'
+GROUP BY Product
+ORDER BY Product ASC;
 
 
 --Question 7 How many customers ordered more than 2 products at a time in February, and what was the average amount spent for those customers? 
