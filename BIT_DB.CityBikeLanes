@@ -1,0 +1,16 @@
+--Created a new table (CityBikeLanes) by running lines of SQL
+--Learning CTEs
+WITH tempBike AS (
+SELECT
+street
+, AVG(safetyrating) AS avg_safety_rating
+FROM CityBikeLanes
+GROUP BY street)
+
+SELECT
+street
+, avg_safety_rating
+,'Safe Lane' AS label
+FROM tempBike
+WHERE avg_safety_rating>=4.0 
+ORDER BY avg_safety_rating DESC; 
