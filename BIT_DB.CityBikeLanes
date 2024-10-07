@@ -14,3 +14,17 @@ street
 FROM tempBike
 WHERE avg_safety_rating>=4.0 
 ORDER BY avg_safety_rating DESC; 
+
+--Learning Window Functions
+--Assignments: Which streets need to be improved based on their safety rating?  (4+ Leave, 2.6-3.9 Improve, 2.5- Replace) 
+SELECT 
+street
+, AVG(safetyrating) OVER (PARTITION BY street) AS 'Avg Safety Rating'
+,CASE WHEN 
+AVG(safetyrating) OVER (PARTITION BY street)>=4.0 THEN "Leave As-Is"
+WHEN AVG(safetyrating) OVER (PARTITION BY street)<= 2.5 THEN "Remove"
+ELSE "Improvements Needed"
+END AS "Recommendation"
+FROM CityBikeLanes
+GROUP BY street
+ORDER BY "Avg Safety Rating" DESC;
