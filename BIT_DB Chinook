@@ -1,0 +1,251 @@
+--Chinook Time! 
+--Q1. Show Customers (their full names, customer ID, and country) who are not in the US. (Hint: != or <> can be used to say "is not equal to").
+
+SELECT
+customerId
+,FirstName
+,LastName
+,Country
+FROM chinook.customers
+WHERE Country<>"USA"
+ORDER BY Country ASC;
+
+--Show only the Customers from Brazil.
+SELECT
+customerId
+,FirstName
+,LastName
+,Country
+FROM chinook.customers
+WHERE Country="Brazil";
+
+--Find the Invoices of customers who are from Brazil. The resulting table should show the customer's full name, Invoice ID, Date of the invoice, and billing country.
+
+SELECT
+cust.FirstName
+,cust.LastName
+,inv.InvoiceId
+,inv.InvoiceDate
+,inv.BillingCountry
+FROM chinook.customers AS cust
+JOIN chinook.invoices AS inv
+ON cust.customerId=inv.CustomerId
+WHERE Country="Brazil";
+
+--Adding my own question! Find the list of Customers from Brazil and how many invoices they each have. 
+SELECT
+cust.customerId
+,cust.FirstName
+,cust.LastName
+,COUNT(inv.InvoiceId) AS Invoice_Count
+FROM chinook.customers AS cust
+JOIN chinook.invoices AS inv
+ON cust.customerId=inv.CustomerId
+WHERE Country="Brazil"
+GROUP BY cust.customerId;
+
+
+--Show the Employees who are Sales Agents.
+
+SELECT
+employeeId
+,LastName
+,FirstName
+FROM chinook.employees
+WHERE Title LIKE "Sales%Agent%";
+
+--Find a unique/distinct list of billing countries from the Invoice table.
+
+SELECT distinct
+BillingCountry
+FROM chinook.invoices
+ORDER BY BillingCountry ASC;
+
+
+--Provide a query that shows the invoices associated with each sales agent. The resulting table should include the Sales Agent's full name.
+
+SELECT
+inv.invoiceId
+,cust.SupportRepId
+,emp.FirstName
+,emp.LastName
+FROM invoices AS inv
+JOIN customers AS cust
+ON cust.customerId=inv.CustomerId
+JOIN employees AS emp
+ON cust.SupportRepId=emp.EmployeeId
+GROUP BY inv.invoiceId;  
+
+--Add my own. How many Sales (invoiceId) did each Sales Agent Have
+SELECT
+cust.SupportRepId
+,emp.FirstName
+,emp.LastName
+,COUNT(inv.invoiceId) AS Total_Number_of_Sales
+FROM invoices AS inv
+JOIN customers AS cust
+ON cust.customerId=inv.CustomerId
+JOIN employees AS emp
+ON cust.SupportRepId=emp.EmployeeId
+GROUP BY cust.SupportRepId; 
+
+--Show the Invoice Total, Customer name, Country, and Sales Agent name for all invoices and customers.
+
+SELECT
+inv.InvoiceId
+,inv.Total
+,cust.FirstName AS Customer_First_Name
+,cust.LastName AS Customer_Last_Name
+,cust.Country
+,emp.FirstName AS Sales_Agent_First_Name
+,emp.LastName AS Sales_Agent_Last_Name
+FROM invoices AS inv
+JOIN customers AS cust
+ON cust.customerId=inv.CustomerId
+JOIN employees AS emp
+ON cust.SupportRepId=emp.EmployeeId
+GROUP BY inv.invoiceId;
+
+--Add my own.  Show the Total Invoice Amounts for each Customer, include customer Id, country and total spent. Order from who spent the most to the least.  
+SELECT
+cust.CustomerId
+,cust.Country
+,SUM(inv.Total) AS Total_Spent
+FROM invoices AS inv
+JOIN customers AS cust
+ON cust.customerId=inv.CustomerId
+GROUP BY cust.CustomerId
+ORDER BY Total_Spent DESC;
+
+--How many Invoices were there in 2009?
+SELECT
+COUNT(InvoiceId) AS "2009_Count"
+FROM invoices
+WHERE InvoiceDate LIKE "2009%";
+
+--What are the total sales for 2009?
+SELECT
+ROUND(SUM(Total)) AS "2009_Total_Sales"
+FROM invoices
+WHERE InvoiceDate LIKE "2009%";
+
+--Write a query that includes the purchased track name with each invoice line ID.
+
+SELECT
+invoice_items.InvoiceLineId
+,tracks.Name
+FROM tracks
+JOIN invoice_items 
+ON tracks.TrackId=invoice_items.TrackId
+ORDER BY InvoiceLineId ASC; 
+
+--Write a query that includes the purchased track name AND artist name with each invoice line ID.
+SELECT
+invoice_items.InvoiceLineId
+,tracks.Name AS Track_Name
+,artists.Name AS Artist_Name
+FROM tracks
+JOIN invoice_items 
+ON tracks.TrackId=invoice_items.TrackId
+JOIN albums
+ON tracks.AlbumId=albums.AlbumId
+JOIN artists
+ON albums.ArtistId=artists.ArtistId
+GROUP BY invoice_items.InvoiceLineId
+ORDER BY InvoiceLineId ASC; 
+
+--Provide a query that shows all the Tracks, and include the Album name, Media type, and Genre.
+SELECT
+tracks.Name AS Track_Name
+,albums.Title AS Album_Name
+,media_types.Name AS Media_Type
+,genres.Name AS Genre
+FROM tracks
+JOIN media_types
+ON tracks.MediaTypeId=media_types.MediaTypeId
+JOIN albums
+ON tracks.AlbumId=albums.AlbumId
+JOIN genres
+ON tracks.GenreId=genres.GenreId
+GROUP BY tracks.Name
+ORDER BY tracks.Name ASC;
+
+--Show the total sales made by each sales agent.
+
+SELECT
+cust.SupportRepId
+,emp.FirstName
+,emp.LastName
+,COUNT(inv.invoiceId) AS Total_Number_of_Sales
+,ROUND(SUM(inv.Total)) AS Total_Amount_in_Sales
+FROM invoices AS inv
+JOIN customers AS cust
+ON cust.customerId=inv.CustomerId
+JOIN employees AS emp
+ON cust.SupportRepId=emp.EmployeeId
+GROUP BY cust.SupportRepId;
+
+--Which sales agent made the most dollars in sales in 2009?
+SELECT
+cust.SupportRepId
+,emp.FirstName
+,emp.LastName
+,COUNT(inv.invoiceId) AS Total_Number_of_Sales
+,ROUND(SUM(inv.Total)) AS Total_Amount_in_Sales
+FROM invoices AS inv
+JOIN customers AS cust
+ON cust.customerId=inv.CustomerId
+JOIN employees AS emp
+ON cust.SupportRepId=emp.EmployeeId
+WHERE inv.InvoiceDate LIKE "2009%"
+GROUP BY cust.SupportRepId;
+
+--Add my own.  What is the most popular genre of music purchased in each country?   I got all the joins figured out, then ChatGPT helped me with the Windows Table Function! So cool! 
+
+
+WITH GenrePopularity AS (
+    SELECT
+        invoices.BillingCountry AS Country,
+        genres.Name AS Genre,
+        COUNT(genres.Name) AS Number_Songs_In_Genre,
+        ROW_NUMBER() OVER (PARTITION BY invoices.BillingCountry ORDER BY COUNT(genres.Name) DESC) AS rank
+    FROM invoices
+    JOIN invoice_items 
+        ON invoices.InvoiceId = invoice_items.InvoiceId 
+    JOIN tracks
+        ON invoice_items.TrackId = tracks.TrackId
+    JOIN genres
+        ON tracks.GenreId = genres.GenreId
+    GROUP BY invoices.BillingCountry, genres.Name
+)
+SELECT
+    Country,
+    Genre AS Most_Downloaded_Music_Genre,
+    Number_Songs_In_Genre
+FROM GenrePopularity
+WHERE rank = 1
+ORDER BY Country ASC;
+
+--Me again, Can I modify this to show the top 3 genres? This time I don't need to see how many. Not as easy as I thought! More help from ChatGPT to get multiples rankings. 
+WITH GenrePopularity AS (
+    SELECT
+        invoices.BillingCountry AS Country,
+        genres.Name AS Genre,
+        COUNT(genres.Name) AS Number_Songs_In_Genre,
+        RANK() OVER (PARTITION BY invoices.BillingCountry ORDER BY COUNT(genres.Name) DESC) AS rank
+    FROM invoices
+    JOIN invoice_items 
+        ON invoices.InvoiceId = invoice_items.InvoiceId 
+    JOIN tracks
+        ON invoice_items.TrackId = tracks.TrackId
+    JOIN genres
+        ON tracks.GenreId = genres.GenreId
+    GROUP BY invoices.BillingCountry, genres.Name
+)
+SELECT
+    Country,
+    Genre AS Most_Downloaded_Music_Genre,
+    Number_Songs_In_Genre
+FROM GenrePopularity
+WHERE rank <= 3
+ORDER BY Country ASC, rank ASC;
